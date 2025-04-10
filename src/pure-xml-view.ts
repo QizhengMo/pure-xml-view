@@ -39,12 +39,6 @@ export class PureXml extends HTMLElement {
             }
         }
 
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 30px;
-        }
-
         .input-section, .output-section {
             background-color: white;
             padding: 20px;
@@ -77,19 +71,13 @@ export class PureXml extends HTMLElement {
             background-color: #45a049;
         }
 
-        #xml-renderer {
-            margin-top: 20px;
-            font-family: monospace;
-            overflow: auto;
+        .node-container {
+            display: flex;
         }
-
+        
         .node {
-            margin-left: 20px;
-        }
-
-        .node-content {
             display: block;
-            padding: 2px 0;
+            margin-left: 20px;
         }
 
         .toggle {
@@ -193,11 +181,9 @@ export class PureXml extends HTMLElement {
       // Process the XML document
       this.renderNode(xmlDoc, xmlRenderer);
 
-      // Add event listeners for toggling nodes
-      this.addToggleListeners();
-
     } catch (error: any) {
       xmlRenderer.innerHTML = '<div class="error">Error: ' + error.message + '</div>';
+      console.error('Error rendering XML:', error);
     }
   }
 
@@ -229,17 +215,8 @@ export class PureXml extends HTMLElement {
       nodeElement.className = 'node-container';
 
       const nodeContent = document.createElement('div');
-      nodeContent.className = 'node-content';
 
       let html = '';
-
-      // Add toggle button if the node has children
-      if (hasChildren) {
-        html += '<span class="toggle">-</span>';
-      } else {
-        html += '<span class="toggle" style="visibility: hidden;">-</span>';
-      }
-
       // Opening tag
       html += '&lt;<span class="tag-name">' + node.nodeName + '</span>';
 
@@ -252,6 +229,7 @@ export class PureXml extends HTMLElement {
         }
       }
 
+      // > or /> for self-closing tags
       if (!hasChildren) {
         html += ' /&gt;';
       } else {
@@ -261,34 +239,29 @@ export class PureXml extends HTMLElement {
       nodeContent.innerHTML = html;
       nodeElement.appendChild(nodeContent);
 
+      let child = null;
       if (hasChildren) {
-        // Container for child nodes
-        const childContainer = document.createElement('div');
-        childContainer.className = 'node';
+        if (node.childNodes[0].nodeType === Node.TEXT_NODE) {
+          const text = node.childNodes[0].nodeValue.trim();
+          const child = document.createElement('span');
+          child.className = 'text-content';
+          child.innerHTML = this.escapeHTML(text);
+        } else {
+          // Container for child nodes
+          const child = document.createElement('div');
+          child.className = 'node';
 
-        // Process child nodes
-        for (let i = 0; i < node.childNodes.length; i++) {
-          const childNode = node.childNodes[i];
-
-          // Handle text nodes
-          if (childNode.nodeType === Node.TEXT_NODE) {
-            const text = childNode.nodeValue.trim();
-            if (text) {
-              const textElement = document.createElement('div');
-              textElement.className = 'node-content';
-              textElement.innerHTML = '<span class="text-content">' + this.escapeHTML(text) + '</span>';
-              childContainer.appendChild(textElement);
-            }
-          } else {
-            this.renderNode(childNode, childContainer);
+          // Process child nodes
+          for (let i = 0; i < node.childNodes.length; i++) {
+            const childNode = node.childNodes[i];
+            this.renderNode(childNode, child);
           }
         }
-
-        nodeElement.appendChild(childContainer);
+        nodeElement.appendChild(child!);
 
         // Closing tag
         const closingElement = document.createElement('div');
-        closingElement.className = 'node-content';
+        // closingElement.className = 'node-content';
         closingElement.innerHTML = '&lt;/<span class="tag-name">' + node.nodeName + '</span>&gt;';
         nodeElement.appendChild(closingElement);
       }
@@ -298,25 +271,10 @@ export class PureXml extends HTMLElement {
     // Handle other node types as needed (comment, processing instruction, etc.)
     else if (node.nodeType === Node.COMMENT_NODE) {
       const commentElement = document.createElement('div');
-      commentElement.className = 'node-content';
+      // commentElement.className = 'node-content';
       commentElement.innerHTML = '<span class="text-content">&lt;!-- ' + node.nodeValue + ' --&gt;</span>';
       container.appendChild(commentElement);
     }
-  }
-
-  // Add event listeners for toggle buttons
-  addToggleListeners() {
-    const toggles = document.querySelectorAll('.toggle');
-    toggles.forEach(toggle => {
-      toggle.addEventListener('click', function(e) {
-        if (!e.target) return;
-        // @ts-ignore
-        const nodeContainer = e.target.closest('.node-container');
-        nodeContainer.classList.toggle('collapsed');
-        // @ts-ignore
-        e.target.textContent = nodeContainer.classList.contains('collapsed') ? '+' : '-';
-      });
-    });
   }
 
   // Helper function to escape HTML
