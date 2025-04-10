@@ -1,6 +1,6 @@
 {
   "name": "pure-xml-view",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -21,7 +21,7 @@
     "dist"
   ],
   "keywords": [],
-  "author": "",
+  "author": "qzmo (moqizhengz@gmail.com)",
   "license": "ISC",
   "type": "module",
   "devDependencies": {
