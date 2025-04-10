@@ -29,6 +29,7 @@
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.2",
     "@webcomponents/webcomponentsjs": "^2.8.0",
+    "prettier": "^3.5.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "rollup": "^4.39.0",
