@@ -1,8 +1,11 @@
 export class PureXml extends HTMLElement {
   static get observedAttributes() {
-    return [];
+    return ['data'];
   }
 
+  get data() {
+    return this.getAttribute('data') || '';
+  }
   // Shadow DOM for encapsulation
   constructor() {
     super();
@@ -11,9 +14,6 @@ export class PureXml extends HTMLElement {
 
   connectedCallback() {
     this.render();
-  }
-
-  disconnectedCallback() {
   }
 
   attributeChangedCallback() {
@@ -158,15 +158,14 @@ export class PureXml extends HTMLElement {
             gap: 10px;
         }
       </style>
-      <slot id="xml-input"></slot>
-      <div class="output-section">
-          <h2>Rendered XML</h2>
-          <div id="xml-renderer"></div>
-      </div>
     `;
-    const xmlRenderer = document.getElementById('xml-renderer');
-    const input = document.getElementById('xml-input')!.textContent;
-    this.renderXML(input, xmlRenderer!);
+    const xmlWrapper = document.createElement('div');
+    xmlWrapper.className = 'output-section';
+    this.shadowRoot.appendChild(xmlWrapper);
+
+    const xmlRenderer = document.createElement('div');
+    this.renderXML(this.data, xmlRenderer!);
+    xmlWrapper.appendChild(xmlRenderer);
   }
 
   // Parse and render XML
